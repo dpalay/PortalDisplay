@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Chart</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            background-color: #FAFAFA;
+        }
+        
+        svg {
+            background-color: #FAFAFA;
+        }
+    </style>
+</head>
+
+<body translate="no">
+
+    <div class="container centered">
+        <div id="graph-container"></div>
+    </div>
+    <script src="libs/d3.v5.js"></script>
+    <script src="scripts/d3script.js"></script>
+
+    <script>
+        let chart;
+        let margin = {
+                top: 20,
+                right: 20,
+                bottom: 30,
+                left: 40
+            },
+            width = 860 - margin.left - margin.right,
+            height = 900 - margin.top - margin.bottom;
+        let x = d3.scaleLinear()
+            .range([0, width]);
+        let y = d3.scaleLinear()
+            .range([height, 0]);
+
+        let svg = d3.select("body").append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+        d3.json('data.json')
+            .then(data => {
+                let cleanData = data.map(datum => {
+                    return {
+                        x: +datum.coordinates.lng,
+                        y: +datum.coordinates.lat
+                    }
+                })
+                console.log(cleanData)
+                x.domain(d3.extent(cleanData, function(d) {
+                    return d.x;
+                })).nice();
+                y.domain(d3.extent(cleanData, function(d) {
+                    return d.y;
+                })).nice();
+
+                // Add the x-axis.
+                svg.append("g")
+                    .attr("class", "x axis")
+                    .attr("transform", "translate(0," + height + ")")
+                    .call(d3.axisBottom(x));
+
+                // Add the y-axis.
+                svg.append("g")
+                    .attr("class", "y axis")
+                    .call(d3.axisLeft(y));
+
+                // Add the points!
+                svg.selectAll(".point")
+                    .data(cleanData)
+                    .enter()
+                    .append("circle")
+                    .attr("cx", d => x(d.x))
+                    .attr("cy", d => y(d.y))
+                    .attr("r", 2)
+
+
+                /*.append("path")
+                .attr("class", "point")
+                .attr("d", d3.symbol().type(d3.symbolCircle))
+                .attr("transform", function(d) {
+                    return "translate(" + x(d.x) + "," + y(d.y) + ")";
+                });*/
+
+            })
+    </script>
+
+
+</body>
+
+</html>

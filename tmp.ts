@@ -59,6 +59,9 @@ const intersect = (line1: Link, line2: Link): boolean => {
 // Program start
 import data from './data';
 
+//init output
+let output: Object = {};
+
 // sort the list to find the westernmost point
 let sortedList = data.sort((a,b) => Math.abs(b.coordinates.lng) - Math.abs(a.coordinates.lng))
 

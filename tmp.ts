@@ -1,13 +1,4 @@
-type MaxLinkPortal = {
-    "guid": string;
-    "title": string;
-    "coordinates": Coords
-    "link": {
-        "intel": string;
-        "gmap": string;
-    };
-    "image": string;
-}
+import * as fs from 'fs';
 type Coords =
 {
     lat: number
@@ -24,7 +15,7 @@ type Portal =
     title: string
     x: number
     y: number
-    slopeFromAnchor: number
+    slopeFromAnchor?: number
 }
 type Link = 
 {
@@ -33,6 +24,7 @@ type Link =
 }
 
 const DEBUG = false;
+
 
 // Functions
 const dbg = (str: any) => { 
@@ -60,10 +52,21 @@ const intersect = (line1: Link, line2: Link): boolean => {
 import data from './data';
 
 //init output
-let output: Object = {};
+let output: {
+    anchor?: Portal
+    portalList?: Portal[]
+    linksFrom?: Array<Link[]>
+    linksTo?: Array<Link[]>
+    allLinks?: Array<Link>
+} = {}
 
 // sort the list to find the westernmost point
 let sortedList = data.sort((a,b) => Math.abs(b.coordinates.lng) - Math.abs(a.coordinates.lng))
+
+
+
+
+output.anchor = {title: sortedList[0].title, x: sortedList[0].coordinates.lng, y: sortedList[0].coordinates.lat }
 
 // Set that portal as anchor and remove it from the list of portals
 let anchor = sortedList.shift() 
@@ -79,52 +82,67 @@ let portals: Portal[] = sortedList.map(
               , slopeFromAnchor: slope(anchor.coordinates, portal.coordinates)}
 }).sort((a,b) => b.slopeFromAnchor - a.slopeFromAnchor)
 
+// Add the portals to the output Portal List
+output.portalList = [output.anchor, ...portals]
+
 dbg(portals.map(portal => `from ${portal.title}`));
 
+
+// Running tally of all possible links
 let allLinks: Link[] = []
-let links: Link[][] = []
-links.push(portals.map((portal: ShortPortal):Link =>{
-    return {
-        source: {title: portal.title, x: portal.x, y: portal.y},
-        dest: {title: anchor.title, x: anchor.coordinates.lng, y: anchor.coordinates.lat}
-    }
-}))
+
+// add the links to the anchor to allLinks
 allLinks = portals.map((portal: ShortPortal):Link =>{
     return {
         source: {title: portal.title, x: portal.x, y: portal.y},
         dest: {title: anchor.title, x: anchor.coordinates.lng, y: anchor.coordinates.lat}
     }
 })
+output.allLinks = [...allLinks]
 
+// all these links go TO the anchor
+output.linksTo = []
+for (let index = 0; index < portals.length+1; index++) {
+    output.linksTo[index] = [];  
+}
+output.linksTo[0] = [...allLinks]
+
+// add each link to the linksFrom
+output.linksFrom = []
+for (let index = 0; index < portals.length+1; index++) {
+    output.linksFrom[index] = [];  
+}
+
+for (let index = 0; index < allLinks.length; index++) {
+    const link = allLinks[index];
+    output.linksFrom[index+1] = [link,...output.linksFrom[index+1]]
+}
+
+/*
+portals:  [ A, b, c, d]
+linksFrom:[[0],[1],[1],[1]]
+linksTo:  [[86],[],[],[]]
+*/
+
+
+// Start with the 2nd highest sloped portal.  
+// The highest slope is trivial.  It has 1 link TO the anchor
 console.log(`starting from the top, checking for links from each portal`)
-for (let i = 1; i < portals.length; i++) {
-    links[i] = []
-    const sourcePortal = portals[i];    
+for (let sourcePortalIndex = 1; sourcePortalIndex < portals.length; sourcePortalIndex++) {
+//    links[i] = []
+    const sourcePortal = portals[sourcePortalIndex];    
     console.log(`checking ${sourcePortal.title}`)
-    for (let destPortalIndex = 0; destPortalIndex < i; destPortalIndex++){
+    for (let destPortalIndex = 0; destPortalIndex < sourcePortalIndex; destPortalIndex++){
         const destPortal = portals[destPortalIndex]
-        let testedPassed: number[] = []
-        let testedFailed: number[] = []
+        const tmpLink = {source: sourcePortal, dest: destPortal}
         console.log(`..against ${destPortal.title}`)
-        // loop through all the links from lower # portals and see if they intersect with this new link
         let conflict = false;
-        for (let j=destPortalIndex; j<i; j++) // TODO:  Was j=0.  is this right?
-        {
-            // start at 0 and go up to the portal we're checking as the destination
-            const testPortal = portals[j];
-            // find all links involving this portal
-            let linksWithTest = allLinks.filter((link) => (link.dest.title === testPortal.title || link.source.title == testPortal.title))
-            dbg(`....found ${linksWithTest.length} links with ${testPortal.title}`)
-            linksWithTest.forEach(link => { 
-                dbg(`......${link.source.title} -> ${link.dest.title}`)                
-            });
-            conflict = linksWithTest.some((link) => intersect(link,{source: sourcePortal, dest: destPortal} ))
-            
-        }
+        conflict = allLinks.some((link) => intersect(link, tmpLink))
         if (!conflict){
             console.log(`........No conflict found! Add link from ${sourcePortal.title} to ${destPortal.title}`)
-            allLinks.push({source: sourcePortal, dest: destPortal});
-            links[i].push({source: sourcePortal, dest: destPortal})
+            allLinks.push(tmpLink);
+            output.linksFrom[sourcePortalIndex+1].push(tmpLink)
+            output.linksTo[destPortalIndex+1].push(tmpLink)
         }
         else {
             console.log(`........Conflict.  Can't link ${sourcePortal.title} to ${destPortal.title}`)
@@ -133,5 +151,15 @@ for (let i = 1; i < portals.length; i++) {
         
     }    
 }
+output.allLinks = [...allLinks]
 
-console.log(links)
+//console.log(output)
+fs.writeFileSync('./tmpoutput.json',JSON.stringify(output))
+
+console.log(output.linksTo.map((x,i) => `${output.portalList[i].title},${x.length}`))
+output.linksFrom.forEach((links, i) => {
+    console.log(output.portalList[i].title)
+    links.forEach((link, i) => {
+        console.log(`..${i}: ${link.dest.title}`)
+    })
+})

@@ -91,3 +91,4 @@ var data = [
     { "guid": "b2bbc394c3c64476b051b2a30616acb2.16", "title": "Epic - Dobby", "coordinates": { "lat": 42.99984, "lng": -89.565122 }, "link": { "intel": "https://intel.ingress.com/intel?ll=42.99984,-89.565122&z=16&pll=42.99984,-89.565122", "gmap": "https://google.com/maps/place/42.99984,-89.565122" }, "image": "http://lh3.googleusercontent.com/ZosZL6lefwQSr0h7izMrQSsgH6DJZtSFZd8_wSR-vRCFj9x-g1ZZ3tIe9m0zv6GzCXmcZUjUOewNaqykI5k" }
 ];
 exports["default"] = data;
+//# sourceMappingURL=data.js.map

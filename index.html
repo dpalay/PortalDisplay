@@ -1,228 +1,194 @@
 <!DOCTYPE html>
 
 <html>
-  <head>
+
+<head>
     <meta charset="UTF-8" />
     <title>Chart</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <style>
-      body {
-        background-color: #fafafa;
-      }
-
-      svg {
-        background-color: #fafafa;
-      }
-      .lines {
-  stroke: #000;
-  stroke-opacity: .3;
-  stroke-width: .5;
-}
-
+        body {
+            background-color: #fafafa;
+        }
+        
+        svg {
+            background-color: #fafafa;
+        }
+        
+        .lines {
+            stroke: #000;
+            stroke-opacity: .25;
+            stroke-width: .5;
+        }
     </style>
     <!-- Latest compiled and minified CSS -->
-    <link
-      rel="stylesheet"
-      href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
-      integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u"
-      crossorigin="anonymous"
-    />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous" />
 
     <!-- Optional theme -->
-    <link
-      rel="stylesheet"
-      href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css"
-      integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp"
-      crossorigin="anonymous"
-    />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous" />
 
-    <script
-      src="https://code.jquery.com/jquery-3.4.1.min.js"
-      integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
-      crossorigin="anonymous"
-    ></script>
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
 
     <!-- Latest compiled and minified JavaScript -->
-    <script
-      src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"
-      integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
-      crossorigin="anonymous"
-    ></script>
-  </head>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+</head>
 
-  <body translate="no">
-    <nav class="navbar navbar-inverse navbar-fixed-top">
-      <div class="container-fluid">
-        <div class="navbar-header">
-          <button
-            type="button"
-            class="navbar-toggle collapsed"
-            data-toggle="collapse"
-            data-target="#navbar"
-            aria-expanded="false"
-            aria-controls="navbar"
-          >
-            <span class="sr-only">Toggle navigation</span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-          </button>
-          <a class="navbar-brand" href="#">Ingress Field Map</a>
-        </div>
-        <div id="navbar" class="navbar-collapse collapse"></div>
-        <!--/.navbar-collapse -->
-      </div>
-    </nav>
+<body translate="no">
+
     <div class="container-fluid">
-      <div class="row">
-        <div class="col-md-2" id="portalList">
-          <ul></ul>
+        <div class="row">
+            <div class="col-md-2" id="portalList">
+                <ul></ul>
+            </div>
+            <div class="col-md-10">
+                <div class="sticky-top">
+                    <div id="graph-container"></div>
+                </div>
+            </div>
         </div>
-        <div class="col-md-10">
-          <div class="sticky-top">
-            <div id="graph-container"></div>
-          </div>
-        </div>
-      </div>
     </div>
     <script src="libs/d3.v5.js"></script>
     <script src="scripts/d3script.js"></script>
 
     <script>
-          let chart;
-          let margin = {
-                  top: 20,
-                  right: 20,
-                  bottom: 30,
-                  left: 40
-              },
-              width = 1280 - margin.left - margin.right,
-              height = 900 - margin.top - margin.bottom;
-          let x = d3.scaleLinear()
-              .range([0, width]);
-          let y = d3.scaleLinear()
-              .range([height, 0]);
-          let container = d3.select("#graph-container")
-          let svg = container.append("svg")
-              .attr("width", width + margin.left + margin.right)
-              .attr("height", height + margin.top + margin.bottom)
-              .append("g")
-              .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+        let chart;
+        let margin = {
+                top: 20,
+                right: 20,
+                bottom: 30,
+                left: 40
+            },
+            width = 1520 - margin.left - margin.right,
+            height = 900 - margin.top - margin.bottom;
+        let x = d3.scaleLinear()
+            .range([0, width]);
+        let y = d3.scaleLinear()
+            .range([height, 0]);
+        let container = d3.select("#graph-container")
+        let svg = container.append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-          d3.json('data.json')
-              .then(data => {
-                  console.log(data)
-                  let cleanData = data.map((datum, index) => {
-                      return {
-                          x: +datum.coordinates.lng,
-                          y: +datum.coordinates.lat,
-                          name: datum.title,
-                          index: index
-                      }
-                  })
-                  console.log(cleanData)
-                  x.domain(d3.extent(cleanData, function(d) {
-                      return d.x;
-                  })).nice();
-                  y.domain(d3.extent(cleanData, function(d) {
-                      return d.y;
-                  })).nice();
+        //d3.json('data.json')
+        d3.json('tmpoutput.json')
+            .then(data => {
+                console.log(data)
+                let allLinks = data.allLinks;
+                let portals = data.portalList;
+                let linksFrom = data.linksFrom;
+                let linksTo = data.linksTo;
+                /*
+                let cleanData = data.map((datum, index) => {
+                    return {
+                        x: +datum.coordinates.lng,
+                        y: +datum.coordinates.lat,
+                        name: datum.title,
+                        index: index
+                    }
+                })
+                console.log(cleanData)
+                */
+                x.domain(d3.extent(portals, function(d) {
+                    return d.x;
+                })).nice();
+                y.domain(d3.extent(portals, function(d) {
+                    return d.y;
+                })).nice();
 
-                  // Add the x-axis.
-                  svg.append("g")
-                      .attr("class", "x axis")
-                      .attr("transform", "translate(0," + height + ")")
-                      .call(d3.axisBottom(x));
+                // Add the x-axis.
+                svg.append("g")
+                    .attr("class", "x axis")
+                    .attr("transform", "translate(0," + height + ")")
+                    .call(d3.axisBottom(x));
 
-                  // Add the y-axis.
-                  svg.append("g")
-                      .attr("class", "y axis")
-                      .call(d3.axisLeft(y));
+                // Add the y-axis.
+                svg.append("g")
+                    .attr("class", "y axis")
+                    .call(d3.axisLeft(y));
 
-                  // Add the points!
-                  svg.selectAll(".point")
-                      .data(cleanData)
-                      .enter()
-                      .append("circle")
-                      .attr("cx", d => x(d.x))
-                      .attr("cy", d => y(d.y))
-                      .attr("r", 2)
-                      .attr("label", d => d.name)
-                      .attr("key", d => d.index )
-                      .attr("id", d => `point${d.index}`)
-                      .on("mouseover", (x) => {
-                          let text = d3.select(`#text${x.index}`)
-                          let point = d3.select(`#point${x.index}`)
-                          text.attr("display", "initial")
-                      })
-                      .on("mouseleave", (x) => {
-                        let text = d3.select(`#text${x.index}`)
-                          let point = d3.select(`#point${x.index}`)
-                          text.attr("display", "none")
-                      })
+                // Add the points!
+                svg.selectAll(".point")
+                    .data(portals)
+                    .enter()
+                    .append("circle")
+                    .attr("cx", d => x(d.x))
+                    .attr("cy", d => y(d.y))
+                    .attr("r", 3)
+                    .attr("label", d => d.title)
+                    .attr("key", d => portals.indexOf(d))
+                    .attr("id", d => `point${portals.indexOf(d)}`)
+                    .on("mouseover", (x) => {
+                        let text = d3.select(`#text${portals.indexOf(x)}`)
+                        let point = d3.select(`#point${portals.indexOf(x)}`)
+                        text.attr("display", "initial")
+                        let lines = d3.selectAll("line")
 
-                  svg.append("g")
-                      .attr("class", "labels")
-                      .selectAll("text")
-                      .data(cleanData)
-                      .enter().append("text")
-                      .attr("dx", d => x(d.x))
-                      .attr("dy", d => y(d.y))
-                      .attr("display", "none")
-                      .attr("id", d => `text${d.index}`)
-                      .text(d =>  d.name )
-
-
-                d3.json('output.json')
-                    .then(links => {
-                        links.forEach(linkset => {
-
-                            console.log(linkset)
-                            svg.append("g")
-                            .attr("class", "lines")
-                            .selectAll("lines")
-                            .data(linkset)
-                            .enter()
-                            .append("line")
-                            .attr("x1", (d,i) =>   x(d.source.x))
-                            .attr("y1", (d,i) => y(d.source.y))
-                            .attr("x2", (d,i) => x(d.dest.x))
-                            .attr("y2", (d,i) => y(d.dest.y))
-                            .attr("id", (d,i) => `${d.source.title}_${d.dest.title}`)
-                        }
-                        )
+                    })
+                    .on("mouseleave", (x) => {
+                        let text = d3.select(`#text${portals.indexOf(x)}`)
+                        let point = d3.select(`#point${portals.indexOf(x)}`)
+                            // text.attr("display", "none")
                     })
 
-                    
-                
+                svg.append("g")
+                    .attr("class", "labels")
+                    .selectAll("text")
+                    .data(portals)
+                    .enter().append("text")
+                    .attr("dx", d => x(d.x))
+                    .attr("dy", d => y(d.y))
+                    //.attr("display", "none")
+                    .attr("id", d => `text${portals.indexOf(d)}`)
+                    .text(d => d.title)
 
-                    d3.select("#portalList")
-                      .selectAll("li")
-                      .data(cleanData)
-                      .enter()
-                      .append("li")
-                      .text(d => `${d.index}: ${d.name}`)
-                      .attr("id", d=> `list${d.index}`)
-                      .on("mouseover", (x) => {
-                          let text = d3.select(`#text${x.index}`)
-                          let point = d3.select(`#point${x.index}`)
-                          point.attr("r", 5)
-                          text.attr("display", "initial")
-                      })
-                      .on("mouseleave", (x) => {
-                        let text = d3.select(`#text${x.index}`)
-                          let point = d3.select(`#point${x.index}`)
-                          point.attr("r", 2)
-                          text.attr("display", "none")
-                      })
-                  /*.append("path")
-                  .attr("class", "point")
-                  .attr("d", d3.symbol().type(d3.symbolCircle))
-                  .attr("transform", function(d) {
-                      return "translate(" + x(d.x) + "," + y(d.y) + ")";
-                  });*/
+                svg.append("g")
+                    .attr("class", "lines")
+                    .selectAll("lines")
+                    .data(allLinks)
+                    .enter()
+                    .append("line")
+                    .attr("x1", (d, i) => x(d.source.x))
+                    .attr("y1", (d, i) => y(d.source.y))
+                    .attr("x2", (d, i) => x(d.dest.x))
+                    .attr("y2", (d, i) => y(d.dest.y))
+                    .attr("id", (d, i) => `${d.source.title}_${d.dest.title}`)
 
-              })
+
+
+                d3.select("#portalList")
+                    .selectAll("li")
+                    .data(portals)
+                    .enter()
+                    .append("li")
+                    .text(d => `${portals.indexOf(d)}: ${d.title}`)
+                    .attr("id", d => `list${portals.indexOf(d)}`)
+                    .on("mouseover", (x) => {
+                        let text = d3.select(`#text${portals.indexOf(x)}`)
+                        let point = d3.select(`#point${portals.indexOf(x)}`)
+                        point.attr("r", 6)
+                        point.style("fill", "red")
+
+                        //    text.attr("display", "initial")
+                    })
+                    .on("mouseleave", (x) => {
+                        let text = d3.select(`#text${portals.indexOf(x)}`)
+                        let point = d3.select(`#point${portals.indexOf(x)}`)
+                        point.attr("r", 3)
+                        point.style("fill", "black")
+
+                        //     text.attr("display", "none")
+                    })
+                    /*.append("path")
+                    .attr("class", "point")
+                    .attr("d", d3.symbol().type(d3.symbolCircle))
+                    .attr("transform", function(d) {
+                        return "translate(" + x(d.x) + "," + y(d.y) + ")";
+                    });*/
+
+            })
     </script>
-  </body>
+</body>
+
 </html>

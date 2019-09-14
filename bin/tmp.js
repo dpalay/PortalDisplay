@@ -1,8 +1,16 @@
 "use strict";
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 exports.__esModule = true;
+var fs = __importStar(require("fs"));
 var DEBUG = false;
 // Functions
 var dbg = function (str) {
@@ -26,8 +34,11 @@ var intersect = function (line1, line2) {
 };
 // Program start
 var data_1 = __importDefault(require("./data"));
+//init output
+var output = {};
 // sort the list to find the westernmost point
 var sortedList = data_1["default"].sort(function (a, b) { return Math.abs(b.coordinates.lng) - Math.abs(a.coordinates.lng); });
+output.anchor = { title: sortedList[0].title, x: sortedList[0].coordinates.lng, y: sortedList[0].coordinates.lat };
 // Set that portal as anchor and remove it from the list of portals
 var anchor = sortedList.shift();
 console.log("Using " + anchor.title + " as the Anchor!");
@@ -38,62 +49,74 @@ var portals = sortedList.map(function (portal) {
         title: portal.title,
         slopeFromAnchor: slope(anchor.coordinates, portal.coordinates) };
 }).sort(function (a, b) { return b.slopeFromAnchor - a.slopeFromAnchor; });
+// Add the portals to the output Portal List
+output.portalList = [output.anchor].concat(portals);
 dbg(portals.map(function (portal) { return "from " + portal.title; }));
+// Running tally of all possible links
 var allLinks = [];
-var links = [];
-links.push(portals.map(function (portal) {
-    return {
-        source: { title: portal.title, x: portal.x, y: portal.y },
-        dest: { title: anchor.title, x: anchor.coordinates.lng, y: anchor.coordinates.lat }
-    };
-}));
+// add the links to the anchor to allLinks
 allLinks = portals.map(function (portal) {
     return {
         source: { title: portal.title, x: portal.x, y: portal.y },
         dest: { title: anchor.title, x: anchor.coordinates.lng, y: anchor.coordinates.lat }
     };
 });
+output.allLinks = allLinks.slice();
+// all these links go TO the anchor
+output.linksTo = [];
+for (var index = 0; index < portals.length + 1; index++) {
+    output.linksTo[index] = [];
+}
+output.linksTo[0] = allLinks.slice();
+// add each link to the linksFrom
+output.linksFrom = [];
+for (var index = 0; index < portals.length + 1; index++) {
+    output.linksFrom[index] = [];
+}
+for (var index = 0; index < allLinks.length; index++) {
+    var link = allLinks[index];
+    output.linksFrom[index + 1] = [link].concat(output.linksFrom[index + 1]);
+}
+/*
+portals:  [ A, b, c, d]
+linksFrom:[[0],[1],[1],[1]]
+linksTo:  [[86],[],[],[]]
+*/
+// Start with the 2nd highest sloped portal.  
+// The highest slope is trivial.  It has 1 link TO the anchor
 console.log("starting from the top, checking for links from each portal");
-var _loop_1 = function (i) {
-    links[i] = [];
-    var sourcePortal = portals[i];
+for (var sourcePortalIndex = 1; sourcePortalIndex < portals.length; sourcePortalIndex++) {
+    //    links[i] = []
+    var sourcePortal = portals[sourcePortalIndex];
     console.log("checking " + sourcePortal.title);
-    var _loop_2 = function (destPortalIndex) {
+    var _loop_1 = function (destPortalIndex) {
         var destPortal = portals[destPortalIndex];
-        var testedPassed = [];
-        var testedFailed = [];
+        var tmpLink = { source: sourcePortal, dest: destPortal };
         console.log("..against " + destPortal.title);
-        // loop through all the links from lower # portals and see if they intersect with this new link
         var conflict = false;
-        var _loop_3 = function (j) {
-            // start at 0 and go up to the portal we're checking as the destination
-            var testPortal = portals[j];
-            // find all links involving this portal
-            var linksWithTest = allLinks.filter(function (link) { return (link.dest.title === testPortal.title || link.source.title == testPortal.title); });
-            dbg("....found " + linksWithTest.length + " links with " + testPortal.title);
-            linksWithTest.forEach(function (link) {
-                dbg("......" + link.source.title + " -> " + link.dest.title);
-            });
-            conflict = linksWithTest.some(function (link) { return intersect(link, { source: sourcePortal, dest: destPortal }); });
-        };
-        for (var j = destPortalIndex; j < i; j++) // TODO:  Was j=0.  is this right?
-         {
-            _loop_3(j);
-        }
+        conflict = allLinks.some(function (link) { return intersect(link, tmpLink); });
         if (!conflict) {
             console.log("........No conflict found! Add link from " + sourcePortal.title + " to " + destPortal.title);
-            allLinks.push({ source: sourcePortal, dest: destPortal });
-            links[i].push({ source: sourcePortal, dest: destPortal });
+            allLinks.push(tmpLink);
+            output.linksFrom[sourcePortalIndex + 1].push(tmpLink);
+            output.linksTo[destPortalIndex + 1].push(tmpLink);
         }
         else {
             console.log("........Conflict.  Can't link " + sourcePortal.title + " to " + destPortal.title);
         }
     };
-    for (var destPortalIndex = 0; destPortalIndex < i; destPortalIndex++) {
-        _loop_2(destPortalIndex);
+    for (var destPortalIndex = 0; destPortalIndex < sourcePortalIndex; destPortalIndex++) {
+        _loop_1(destPortalIndex);
     }
-};
-for (var i = 1; i < portals.length; i++) {
-    _loop_1(i);
 }
-console.log(links);
+output.allLinks = allLinks.slice();
+//console.log(output)
+fs.writeFileSync('./tmpoutput.json', JSON.stringify(output));
+console.log(output.linksTo.map(function (x, i) { return output.portalList[i].title + "," + x.length; }));
+output.linksFrom.forEach(function (links, i) {
+    console.log(output.portalList[i].title);
+    links.forEach(function (link, i) {
+        console.log(".." + i + ": " + link.dest.title);
+    });
+});
+//# sourceMappingURL=tmp.js.map

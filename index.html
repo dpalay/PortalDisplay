@@ -20,6 +20,10 @@
             stroke-opacity: .25;
             stroke-width: .5;
         }
+        #slider {
+  width: 350px;
+}
+
     </style>
     <!-- Latest compiled and minified CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous" />
@@ -41,10 +45,10 @@
                 <ul></ul>
             </div>
             <div class="col-md-10">
-                <div class="sticky-top">
+                    <input id="slider" type="range" min="0" max="5" value="5" step="1" />
+                    <span id="slider-value">5</span>
                     <div id="graph-container"></div>
                 </div>
-            </div>
         </div>
     </div>
     <script src="libs/d3.v5.js"></script>
@@ -76,7 +80,7 @@
             .then(data => {
                 console.log(data)
                 let allLinks = data.allLinks;
-                let portals = data.portalList;
+                let portals = data.betterPortalList;
                 let linksFrom = data.linksFrom;
                 let linksTo = data.linksTo;
                 /*
@@ -91,10 +95,10 @@
                 console.log(cleanData)
                 */
                 x.domain(d3.extent(portals, function(d) {
-                    return d.x;
+                    return d.portal.x;
                 })).nice();
                 y.domain(d3.extent(portals, function(d) {
-                    return d.y;
+                    return d.portal.y;
                 })).nice();
 
                 // Add the x-axis.
@@ -113,22 +117,29 @@
                     .data(portals)
                     .enter()
                     .append("circle")
-                    .attr("cx", d => x(d.x))
-                    .attr("cy", d => y(d.y))
+                    .attr("cx", d => x(d.portal.x))
+                    .attr("cy", d => y(d.portal.y))
                     .attr("r", 3)
                     .attr("label", d => d.title)
-                    .attr("key", d => portals.indexOf(d))
-                    .attr("id", d => `point${portals.indexOf(d)}`)
-                    .on("mouseover", (x) => {
-                        let text = d3.select(`#text${portals.indexOf(x)}`)
-                        let point = d3.select(`#point${portals.indexOf(x)}`)
+                    .attr("key", (d,i) => i)
+                    .attr("id", (d,i) => `point${i}`)
+                    .on("mouseover", (d,i,arr) => {
+                      console.log(d)
+                      console.log(i)             
+                      console.log(arr[i])       
+                        let text = d3.select(`#text${i}`)
+                        let point = d3.select(`#point${i}`)
                         text.attr("display", "initial")
-                        let lines = d3.selectAll("line")
+                        let links = d3.selectAll(`.line`)
+                        console.log(text)
+                        console.log(point)
+                        
+                        
 
                     })
-                    .on("mouseleave", (x) => {
-                        let text = d3.select(`#text${portals.indexOf(x)}`)
-                        let point = d3.select(`#point${portals.indexOf(x)}`)
+                    .on("mouseleave", (d,i,arr) => {
+                        let text = d3.select(`#text${i}`)
+                        let point = d3.select(`#point${i}`)
                             // text.attr("display", "none")
                     })
 
@@ -137,11 +148,11 @@
                     .selectAll("text")
                     .data(portals)
                     .enter().append("text")
-                    .attr("dx", d => x(d.x))
-                    .attr("dy", d => y(d.y))
+                    .attr("dx", d => x(d.portal.x))
+                    .attr("dy", d => y(d.portal.y))
                     //.attr("display", "none")
                     .attr("id", d => `text${portals.indexOf(d)}`)
-                    .text(d => d.title)
+                    .text(d => d.portal.title)
 
                 svg.append("g")
                     .attr("class", "lines")
@@ -154,15 +165,17 @@
                     .attr("x2", (d, i) => x(d.dest.x))
                     .attr("y2", (d, i) => y(d.dest.y))
                     .attr("id", (d, i) => `${d.source.title}_${d.dest.title}`)
-
-
+                    .attr("SourceId", (d, i) => `${d.source.x}|${d.source.y}`)
+                    .attr("DestId", (d,i) => `${d.dest.x}|${d.dest.y}`)
+                  
+                  
 
                 d3.select("#portalList")
                     .selectAll("li")
                     .data(portals)
                     .enter()
                     .append("li")
-                    .text(d => `${portals.indexOf(d)}: ${d.title}`)
+                    .text(d => `${portals.indexOf(d)}: ${d.portal.title}`)
                     .attr("id", d => `list${portals.indexOf(d)}`)
                     .on("mouseover", (x) => {
                         let text = d3.select(`#text${portals.indexOf(x)}`)
@@ -188,6 +201,26 @@
                     });*/
 
             })
+
+
+            
+d3.select("#slider").on("input", change)
+// Redraw 
+function change() {
+
+// Reset variables
+let points = +this.value;
+
+// Recreate arrays 
+d3.select("#slider-value").text(points);
+
+// Remove old 
+
+//d3.selectAll(".lines").remove();
+
+
+
+} // Finishes Change Function 
     </script>
 </body>
 

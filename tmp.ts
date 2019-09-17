@@ -58,6 +58,7 @@ let output: {
     linksFrom?: Array<Link[]>
     linksTo?: Array<Link[]>
     allLinks?: Array<Link>
+    betterPortalList? : {portal: Portal, linksFrom: Link[], linksTo: Link[]}[]
 } = {}
 
 // sort the list to find the westernmost point
@@ -82,8 +83,17 @@ let portals: Portal[] = sortedList.map(
               , slopeFromAnchor: slope(anchor.coordinates, portal.coordinates)}
 }).sort((a,b) => b.slopeFromAnchor - a.slopeFromAnchor)
 
+
 // Add the portals to the output Portal List
 output.portalList = [output.anchor, ...portals]
+
+output.betterPortalList = 
+[
+    {portal: output.anchor, linksFrom: [] as Link[], linksTo: [] as Link[]}]
+    .concat(portals.map(
+        (portal => {return {portal: portal, linksFrom: [] as Link[], linksTo: [] as Link[]}})
+        ))
+
 
 dbg(portals.map(portal => `from ${portal.title}`));
 
@@ -106,16 +116,19 @@ for (let index = 0; index < portals.length+1; index++) {
     output.linksTo[index] = [];  
 }
 output.linksTo[0] = [...allLinks]
+output.betterPortalList[0].linksTo = [...allLinks]
 
 // add each link to the linksFrom
 output.linksFrom = []
 for (let index = 0; index < portals.length+1; index++) {
     output.linksFrom[index] = [];  
+    //output.betterPortalList[index].linksFrom = [] // This should already be done when making betterPortalList
 }
 
 for (let index = 0; index < allLinks.length; index++) {
     const link = allLinks[index];
     output.linksFrom[index+1] = [link,...output.linksFrom[index+1]]
+    output.betterPortalList[index+1].linksFrom = [link, ...output.betterPortalList[index+1].linksFrom]
 }
 
 /*
@@ -143,6 +156,8 @@ for (let sourcePortalIndex = 1; sourcePortalIndex < portals.length; sourcePortal
             allLinks.push(tmpLink);
             output.linksFrom[sourcePortalIndex+1].push(tmpLink)
             output.linksTo[destPortalIndex+1].push(tmpLink)
+            output.betterPortalList[sourcePortalIndex+1].linksFrom.push(tmpLink)
+            output.betterPortalList[destPortalIndex+1].linksTo.push(tmpLink)
         }
         else {
             console.log(`........Conflict.  Can't link ${sourcePortal.title} to ${destPortal.title}`)

@@ -1,4 +1,11 @@
 "use strict";
+var __spreadArrays = (this && this.__spreadArrays) || function () {
+    for (var s = 0, i = 0, il = arguments.length; i < il; i++) s += arguments[i].length;
+    for (var r = Array(s), k = 0, i = 0; i < il; i++)
+        for (var a = arguments[i], j = 0, jl = a.length; j < jl; j++, k++)
+            r[k] = a[j];
+    return r;
+};
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
@@ -50,7 +57,12 @@ var portals = sortedList.map(function (portal) {
         slopeFromAnchor: slope(anchor.coordinates, portal.coordinates) };
 }).sort(function (a, b) { return b.slopeFromAnchor - a.slopeFromAnchor; });
 // Add the portals to the output Portal List
-output.portalList = [output.anchor].concat(portals);
+output.portalList = __spreadArrays([output.anchor], portals);
+output.betterPortalList =
+    [
+        { portal: output.anchor, linksFrom: [], linksTo: [] }
+    ]
+        .concat(portals.map((function (portal) { return { portal: portal, linksFrom: [], linksTo: [] }; })));
 dbg(portals.map(function (portal) { return "from " + portal.title; }));
 // Running tally of all possible links
 var allLinks = [];
@@ -61,21 +73,24 @@ allLinks = portals.map(function (portal) {
         dest: { title: anchor.title, x: anchor.coordinates.lng, y: anchor.coordinates.lat }
     };
 });
-output.allLinks = allLinks.slice();
+output.allLinks = __spreadArrays(allLinks);
 // all these links go TO the anchor
 output.linksTo = [];
 for (var index = 0; index < portals.length + 1; index++) {
     output.linksTo[index] = [];
 }
-output.linksTo[0] = allLinks.slice();
+output.linksTo[0] = __spreadArrays(allLinks);
+output.betterPortalList[0].linksTo = __spreadArrays(allLinks);
 // add each link to the linksFrom
 output.linksFrom = [];
 for (var index = 0; index < portals.length + 1; index++) {
     output.linksFrom[index] = [];
+    //output.betterPortalList[index].linksFrom = [] // This should already be done when making betterPortalList
 }
 for (var index = 0; index < allLinks.length; index++) {
     var link = allLinks[index];
-    output.linksFrom[index + 1] = [link].concat(output.linksFrom[index + 1]);
+    output.linksFrom[index + 1] = __spreadArrays([link], output.linksFrom[index + 1]);
+    output.betterPortalList[index + 1].linksFrom = __spreadArrays([link], output.betterPortalList[index + 1].linksFrom);
 }
 /*
 portals:  [ A, b, c, d]
@@ -100,6 +115,8 @@ for (var sourcePortalIndex = 1; sourcePortalIndex < portals.length; sourcePortal
             allLinks.push(tmpLink);
             output.linksFrom[sourcePortalIndex + 1].push(tmpLink);
             output.linksTo[destPortalIndex + 1].push(tmpLink);
+            output.betterPortalList[sourcePortalIndex + 1].linksFrom.push(tmpLink);
+            output.betterPortalList[destPortalIndex + 1].linksTo.push(tmpLink);
         }
         else {
             console.log("........Conflict.  Can't link " + sourcePortal.title + " to " + destPortal.title);
@@ -109,7 +126,7 @@ for (var sourcePortalIndex = 1; sourcePortalIndex < portals.length; sourcePortal
         _loop_1(destPortalIndex);
     }
 }
-output.allLinks = allLinks.slice();
+output.allLinks = __spreadArrays(allLinks);
 //console.log(output)
 fs.writeFileSync('./tmpoutput.json', JSON.stringify(output));
 console.log(output.linksTo.map(function (x, i) { return output.portalList[i].title + "," + x.length; }));

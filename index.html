@@ -85,60 +85,64 @@
     <script>
       let chart;
       let converter = new showdown.Converter()
+      let chartContainer = document.getElementById("#graph-container")
+      let container = d3.select("#graph-container");
+      let slider = d3.select("#slider");
       let margin = {
           top: 20,
           right: 20,
           bottom: 30,
           left: 40
         },
-        width = 1520 - margin.left - margin.right,
-        height = 900 - margin.top - margin.bottom;
-      let x = d3.scaleLinear().range([0, width]);
-      let y = d3.scaleLinear().range([height, 0]);
-      let container = d3.select("#graph-container");
-      let svg = container
-        .append("svg")
-        .attr("width", width + margin.left + margin.right)
-        .attr("height", height + margin.top + margin.bottom)
-        .append("g")
-        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+        width =  () => container.node().clientWidth - margin.left - margin.right,
+        height = () => container.node().clientHeight - margin.top - margin.bottom;
 
-      let slider = d3.select("#slider");
-      //d3.json('data.json')
-      d3.json("tmpoutput.json").then(data => {
-        slider.attr("max", data.betterPortalList.length - 1);
-        console.log(data);
-        chart = data;
-        let allLinks = data.allLinks;
-        let portals = data.betterPortalList;
-        let linksFrom = data.linksFrom;
-        let linksTo = data.linksTo;
-        x.domain(
-          d3.extent(portals, function(d) {
-            return d.portal.x;
-          })
-        ).nice();
-        y.domain(
-          d3.extent(portals, function(d) {
+        redraw = () => {
+        
+          let x = d3.scaleLinear().range([0, width()]);
+          let y = d3.scaleLinear().range([height(), 0]);
+          let svg = container
+          .append("svg")
+          .attr("width", width() + margin.left + margin.right)
+          .attr("height", height() + margin.top + margin.bottom)
+          .append("g")
+          .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+          
+          
+          d3.json("tmpoutput.json").then(data => {
+            slider.attr("max", data.betterPortalList.length - 1);
+            console.log(data);
+            chart = data;
+            let allLinks = data.allLinks;
+            let portals = data.betterPortalList;
+            let linksFrom = data.linksFrom;
+            let linksTo = data.linksTo;
+            x.domain(
+              d3.extent(portals, function(d) {
+                return d.portal.x;
+              })
+              ).nice();
+              y.domain(
+                d3.extent(portals, function(d) {
             return d.portal.y;
           })
-        ).nice();
-
-        // Add the x-axis.
-        svg
+          ).nice();
+          
+          // Add the x-axis.
+          svg
           .append("g")
           .attr("class", "x axis")
           .attr("transform", "translate(0," + height + ")")
           .call(d3.axisBottom(x));
-
-        // Add the y-axis.
-        svg
+          
+          // Add the y-axis.
+          svg
           .append("g")
           .attr("class", "y axis")
           .call(d3.axisLeft(y));
-
-        // Add the points!
-        svg
+          
+          // Add the points!
+          svg
           .selectAll(".point")
           .data(portals)
           .enter()
@@ -165,8 +169,8 @@
             let point = d3.select(`#p${i}`);
             // text.attr("display", "none")
           });
-
-        svg
+          
+          svg
           .append("g")
           .attr("class", "labels")
           .selectAll("text")
@@ -179,7 +183,7 @@
           .attr("id", (d, i) => `t${i}`)
           .text(d => d.portal.title);
 
-        svg
+          svg
           .append("g")
           .attr("class", "links")
           .selectAll("lines")
@@ -196,7 +200,7 @@
           .attr("DestId", (d, i) => `${d.dest.x}|${d.dest.y}`);
 
         d3.select("#portalList")
-          .selectAll("li")
+        .selectAll("li")
           .data(portals)
           .enter()
           .append("li")
@@ -232,7 +236,8 @@
     
     d3.select("#valUp").on("click", () =>{
       slider.attr("value",+slider.attr("value") + 1)
-    d3.select("#slider-value").text(slider.attr("value"))})
+      d3.select("#slider-value").text(slider.attr("value"))})
+    }
     */
       // Redraw
       function change() {
@@ -277,6 +282,13 @@
             console.log(converter.makeHtml(linkStr))
 
       } // Finishes Change Function
+
+
+      redraw();
+
+      //window.addEventListener("resize", redraw);
+
+      
     </script>
   </body>
 </html>

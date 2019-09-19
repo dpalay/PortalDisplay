@@ -1,227 +1,282 @@
 <!DOCTYPE html>
 
 <html>
-
-<head>
+  <head>
     <meta charset="UTF-8" />
     <title>Chart</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <style>
-        body {
-            background-color: #fafafa;
-        }
-        
-        svg {
-            background-color: #fafafa;
-        }
-        
-        .lines {
-            stroke: #000;
-            stroke-opacity: .25;
-            stroke-width: .5;
-        }
-        #slider {
-  width: 350px;
-}
+      body {
+        background-color: #fafafa;
+      }
 
+      svg {
+        background-color: #fafafa;
+      }
+
+      .link {
+        stroke: #000;
+        stroke-opacity: 0.25;
+        stroke-width: 0.5;
+      }
+
+      #slider {
+        width: 650px;
+      }
     </style>
     <!-- Latest compiled and minified CSS -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous" />
+    <link
+      rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+      integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u"
+      crossorigin="anonymous"
+    />
 
     <!-- Optional theme -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous" />
+    <link
+      rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css"
+      integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp"
+      crossorigin="anonymous"
+    />
 
-    <script src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+    <script
+      src="https://code.jquery.com/jquery-3.4.1.min.js"
+      integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
+      crossorigin="anonymous"
+    ></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/showdown@1.9.0/dist/showdown.min.js" crossorigin="anonymous"></script>
 
     <!-- Latest compiled and minified JavaScript -->
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
-</head>
+    <script
+      src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"
+      integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
+      crossorigin="anonymous"
+    ></script>
+  </head>
 
-<body translate="no">
-
+  <body translate="no">
     <div class="container-fluid">
-        <div class="row">
-            <div class="col-md-2" id="portalList">
-                <ul></ul>
-            </div>
-            <div class="col-md-10">
-                    <input id="slider" type="range" min="0" max="5" value="5" step="1" />
-                    <span id="slider-value">5</span>
-                    <div id="graph-container"></div>
-                </div>
+      <div class="row">
+      <div class="col-md-2">
+        Current Step: <span id="currentStep">0</span>
+      </div>
+      <div class="col-md-2">
+        List of Links:
+      </div>
+      <div class="col-md-8" id="listOfLinks"></div>
+    </div>
+    <div class="row">
+      <div class="col-md-12">
+          <input id="slider" type="range" min="0" max="1" value="0" step="1" />
+          <span id="slider-value">0</span>
+          <div id="graph-container"></div>
         </div>
+        <div class="col-md-2" id="portalList">
+          <ul></ul>
+        </div>
+        
+      </div>
     </div>
     <script src="libs/d3.v5.js"></script>
     <script src="scripts/d3script.js"></script>
 
     <script>
-        let chart;
-        let margin = {
-                top: 20,
-                right: 20,
-                bottom: 30,
-                left: 40
-            },
-            width = 1520 - margin.left - margin.right,
-            height = 900 - margin.top - margin.bottom;
-        let x = d3.scaleLinear()
-            .range([0, width]);
-        let y = d3.scaleLinear()
-            .range([height, 0]);
-        let container = d3.select("#graph-container")
-        let svg = container.append("svg")
-            .attr("width", width + margin.left + margin.right)
-            .attr("height", height + margin.top + margin.bottom)
-            .append("g")
-            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+      let chart;
+      let converter = new showdown.Converter()
+      let margin = {
+          top: 20,
+          right: 20,
+          bottom: 30,
+          left: 40
+        },
+        width = 1520 - margin.left - margin.right,
+        height = 900 - margin.top - margin.bottom;
+      let x = d3.scaleLinear().range([0, width]);
+      let y = d3.scaleLinear().range([height, 0]);
+      let container = d3.select("#graph-container");
+      let svg = container
+        .append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-        //d3.json('data.json')
-        d3.json('tmpoutput.json')
-            .then(data => {
-                console.log(data)
-                let allLinks = data.allLinks;
-                let portals = data.betterPortalList;
-                let linksFrom = data.linksFrom;
-                let linksTo = data.linksTo;
-                /*
-                let cleanData = data.map((datum, index) => {
-                    return {
-                        x: +datum.coordinates.lng,
-                        y: +datum.coordinates.lat,
-                        name: datum.title,
-                        index: index
-                    }
-                })
-                console.log(cleanData)
-                */
-                x.domain(d3.extent(portals, function(d) {
-                    return d.portal.x;
-                })).nice();
-                y.domain(d3.extent(portals, function(d) {
-                    return d.portal.y;
-                })).nice();
+      let slider = d3.select("#slider");
+      //d3.json('data.json')
+      d3.json("tmpoutput.json").then(data => {
+        slider.attr("max", data.betterPortalList.length - 1);
+        console.log(data);
+        chart = data;
+        let allLinks = data.allLinks;
+        let portals = data.betterPortalList;
+        let linksFrom = data.linksFrom;
+        let linksTo = data.linksTo;
+        x.domain(
+          d3.extent(portals, function(d) {
+            return d.portal.x;
+          })
+        ).nice();
+        y.domain(
+          d3.extent(portals, function(d) {
+            return d.portal.y;
+          })
+        ).nice();
 
-                // Add the x-axis.
-                svg.append("g")
-                    .attr("class", "x axis")
-                    .attr("transform", "translate(0," + height + ")")
-                    .call(d3.axisBottom(x));
+        // Add the x-axis.
+        svg
+          .append("g")
+          .attr("class", "x axis")
+          .attr("transform", "translate(0," + height + ")")
+          .call(d3.axisBottom(x));
 
-                // Add the y-axis.
-                svg.append("g")
-                    .attr("class", "y axis")
-                    .call(d3.axisLeft(y));
+        // Add the y-axis.
+        svg
+          .append("g")
+          .attr("class", "y axis")
+          .call(d3.axisLeft(y));
 
-                // Add the points!
-                svg.selectAll(".point")
-                    .data(portals)
-                    .enter()
-                    .append("circle")
-                    .attr("cx", d => x(d.portal.x))
-                    .attr("cy", d => y(d.portal.y))
-                    .attr("r", 3)
-                    .attr("label", d => d.title)
-                    .attr("key", (d,i) => i)
-                    .attr("id", (d,i) => `point${i}`)
-                    .on("mouseover", (d,i,arr) => {
-                      console.log(d)
-                      console.log(i)             
-                      console.log(arr[i])       
-                        let text = d3.select(`#text${i}`)
-                        let point = d3.select(`#point${i}`)
-                        text.attr("display", "initial")
-                        let links = d3.selectAll(`.line`)
-                        console.log(text)
-                        console.log(point)
-                        
-                        
+        // Add the points!
+        svg
+          .selectAll(".point")
+          .data(portals)
+          .enter()
+          .append("circle")
+          .attr("cx", d => x(d.portal.x))
+          .attr("cy", d => y(d.portal.y))
+          .attr("r", 3)
+          .attr("label", d => d.title)
+          .attr("key", (d, i) => i)
+          .attr("id", (d, i) => `p${i}`)
+          .on("mouseover", (d, i, arr) => {
+            console.log(d);
+            console.log(i);
+            console.log(arr[i]);
+            let text = d3.select(`#t${i}`);
+            let point = d3.select(`#p${i}`);
+            text.attr("display", "initial");
+            let links = d3.selectAll(`.link`);
+            console.log(text);
+            console.log(point);
+          })
+          .on("mouseleave", (d, i, arr) => {
+            let text = d3.select(`#t${i}`);
+            let point = d3.select(`#p${i}`);
+            // text.attr("display", "none")
+          });
 
-                    })
-                    .on("mouseleave", (d,i,arr) => {
-                        let text = d3.select(`#text${i}`)
-                        let point = d3.select(`#point${i}`)
-                            // text.attr("display", "none")
-                    })
+        svg
+          .append("g")
+          .attr("class", "labels")
+          .selectAll("text")
+          .data(portals)
+          .enter()
+          .append("text")
+          .attr("dx", d => x(d.portal.x))
+          .attr("dy", d => y(d.portal.y))
+          //.attr("display", "none")
+          .attr("id", (d, i) => `t${i}`)
+          .text(d => d.portal.title);
 
-                svg.append("g")
-                    .attr("class", "labels")
-                    .selectAll("text")
-                    .data(portals)
-                    .enter().append("text")
-                    .attr("dx", d => x(d.portal.x))
-                    .attr("dy", d => y(d.portal.y))
-                    //.attr("display", "none")
-                    .attr("id", d => `text${portals.indexOf(d)}`)
-                    .text(d => d.portal.title)
+        svg
+          .append("g")
+          .attr("class", "links")
+          .selectAll("lines")
+          .data(allLinks)
+          .enter()
+          .append("line")
+          .attr("class", "link")
+          .attr("x1", (d, i) => x(d.source.x))
+          .attr("y1", (d, i) => y(d.source.y))
+          .attr("x2", (d, i) => x(d.dest.x))
+          .attr("y2", (d, i) => y(d.dest.y))
+          .attr("id", (d, i) => `${d.source.title}_${d.dest.title}`)
+          .attr("SourceId", (d, i) => `${d.source.x}|${d.source.y}`)
+          .attr("DestId", (d, i) => `${d.dest.x}|${d.dest.y}`);
 
-                svg.append("g")
-                    .attr("class", "lines")
-                    .selectAll("lines")
-                    .data(allLinks)
-                    .enter()
-                    .append("line")
-                    .attr("x1", (d, i) => x(d.source.x))
-                    .attr("y1", (d, i) => y(d.source.y))
-                    .attr("x2", (d, i) => x(d.dest.x))
-                    .attr("y2", (d, i) => y(d.dest.y))
-                    .attr("id", (d, i) => `${d.source.title}_${d.dest.title}`)
-                    .attr("SourceId", (d, i) => `${d.source.x}|${d.source.y}`)
-                    .attr("DestId", (d,i) => `${d.dest.x}|${d.dest.y}`)
-                  
-                  
+        d3.select("#portalList")
+          .selectAll("li")
+          .data(portals)
+          .enter()
+          .append("li")
+          .text(d => `${portals.indexOf(d)}: ${d.portal.title}`)
+          .attr("id", d => `list${portals.indexOf(d)}`)
+          .on("mouseover", x => {
+            let text = d3.select(`#text${portals.indexOf(x)}`);
+            let point = d3.select(`#point${portals.indexOf(x)}`);
+            point.attr("r", 6);
+            point.style("fill", "red");
 
-                d3.select("#portalList")
-                    .selectAll("li")
-                    .data(portals)
-                    .enter()
-                    .append("li")
-                    .text(d => `${portals.indexOf(d)}: ${d.portal.title}`)
-                    .attr("id", d => `list${portals.indexOf(d)}`)
-                    .on("mouseover", (x) => {
-                        let text = d3.select(`#text${portals.indexOf(x)}`)
-                        let point = d3.select(`#point${portals.indexOf(x)}`)
-                        point.attr("r", 6)
-                        point.style("fill", "red")
+            //    text.attr("display", "initial")
+          })
+          .on("mouseleave", x => {
+            let text = d3.select(`#t${portals.indexOf(x)}`);
+            let point = d3.select(`#p${portals.indexOf(x)}`);
+            point.attr("r", 3);
+            point.style("fill", "black");
+          });
+        /*.append("path")
+        .attr("class", "point")
+        .attr("d", d3.symbol().type(d3.symbolCircle))
+        .attr("transform", function(d) {
+            return "translate(" + x(d.x) + "," + y(d.y) + ")";
+        });*/
+      });
 
-                        //    text.attr("display", "initial")
-                    })
-                    .on("mouseleave", (x) => {
-                        let text = d3.select(`#text${portals.indexOf(x)}`)
-                        let point = d3.select(`#point${portals.indexOf(x)}`)
-                        point.attr("r", 3)
-                        point.style("fill", "black")
+      slider.on("input", change);
+      /*
+    d3.select("#valDown").on("click",  () =>{
+      slider.attr("value",+slider.attr("value") + 1)
+    d3.select("#slider-value").text(slider.attr("value"))})
+    
+    d3.select("#valUp").on("click", () =>{
+      slider.attr("value",+slider.attr("value") + 1)
+    d3.select("#slider-value").text(slider.attr("value"))})
+    */
+      // Redraw
+      function change() {
+        // Reset variables
+        let points = +this.value;
+        // update the slider value
+        d3.select("#slider-value").text(points);
 
-                        //     text.attr("display", "none")
-                    })
-                    /*.append("path")
-                    .attr("class", "point")
-                    .attr("d", d3.symbol().type(d3.symbolCircle))
-                    .attr("transform", function(d) {
-                        return "translate(" + x(d.x) + "," + y(d.y) + ")";
-                    });*/
-
-            })
-
-
+        // Remove old
+        d3.selectAll(".link").remove();
+        let tmpLinks = [];
+        let linkStr = ``
+        let indent = 0;
+        d3.select("#listOfLinks").html(converter.makeHtml(linkStr))
+        
+        d3.selectAll("circle")
+          .filter((data, i) => i <= points)
+          .each((d, i, arr) => {
             
-d3.select("#slider").on("input", change)
-// Redraw 
-function change() {
+            tmpLinks = i==0 ? d.linksTo : d.linksFrom.slice(1)
+            linkStr += `${new Array(indent).fill(" ").join("")}* ${d.portal.title}\n`
+            console.log(d)
+            // add the lines to the svg
+            d3.select(".links")
+              .selectAll("lines")
+              .data(tmpLinks)
+              .enter()
+              .append("line")
+              .attr("class", "link")
+              .attr("x1", (d, i) => x(d.source.x))
+              .attr("y1", (d, i) => y(d.source.y))
+              .attr("x2", (d, i) => x(d.dest.x))
+              .attr("y2", (d, i) => y(d.dest.y))
+              .attr("id", (d, i) => `${d.source.title}_${d.dest.title}`)
+              .attr("SourceId", (d, i) => `${d.source.x}|${d.source.y}`)
+              .attr("DestId", (d, i) => `${d.dest.x}|${d.dest.y}`);
 
-// Reset variables
-let points = +this.value;
+              d3.select("#currentStep").text(i)
+            });
+            d3.select("#listOfLinks").html(converter.makeHtml(linkStr))
+            console.log(linkStr)
+            console.log(converter.makeHtml(linkStr))
 
-// Recreate arrays 
-d3.select("#slider-value").text(points);
-
-// Remove old 
-
-//d3.selectAll(".lines").remove();
-
-
-
-} // Finishes Change Function 
+      } // Finishes Change Function
     </script>
-</body>
-
+  </body>
 </html>

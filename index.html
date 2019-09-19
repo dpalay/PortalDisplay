@@ -170,6 +170,8 @@
             // text.attr("display", "none")
           });
           
+
+          // Add labels to the points
           svg
           .append("g")
           .attr("class", "labels")
@@ -229,16 +231,9 @@
       });
 
       slider.on("input", change);
-      /*
-    d3.select("#valDown").on("click",  () =>{
-      slider.attr("value",+slider.attr("value") + 1)
-    d3.select("#slider-value").text(slider.attr("value"))})
-    
-    d3.select("#valUp").on("click", () =>{
-      slider.attr("value",+slider.attr("value") + 1)
-      d3.select("#slider-value").text(slider.attr("value"))})
+      
     }
-    */
+    
       // Redraw
       function change() {
         // Reset variables

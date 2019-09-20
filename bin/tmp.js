@@ -35,8 +35,18 @@ var intersect = function (line1, line2) {
 // Program start
 var data_1 = __importDefault(require("./data"));
 var data;
-//@ts-ignore
-data = data_1["default"];
+data = data_1["default"].map(function (datum) {
+    return {
+        guid: datum.guid,
+        title: datum.title,
+        link: datum.link,
+        image: datum.image,
+        coordinates: {
+            lat: +datum.coordinates.lat,
+            lng: +datum.coordinates.lng
+        }
+    };
+});
 //init output
 var output = {};
 // sort the list to find the westernmost point

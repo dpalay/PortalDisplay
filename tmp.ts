@@ -63,8 +63,17 @@ let data: {
     };
     "image": string;}[]
 
-    //@ts-ignore
-    data = strData
+    
+    data = strData.map(datum => { return {
+        guid: datum.guid,
+        title: datum.title, 
+        link: datum.link, 
+        image: datum.image,
+        coordinates: {
+            lat: +datum.coordinates.lat,
+            lng: +datum.coordinates.lng
+        }
+    }})
 
 //init output
 let output: {

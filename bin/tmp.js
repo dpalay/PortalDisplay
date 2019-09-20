@@ -34,10 +34,13 @@ var intersect = function (line1, line2) {
 };
 // Program start
 var data_1 = __importDefault(require("./data"));
+var data;
+//@ts-ignore
+data = data_1["default"];
 //init output
 var output = {};
 // sort the list to find the westernmost point
-var sortedList = data_1["default"].sort(function (a, b) { return Math.abs(b.coordinates.lng) - Math.abs(a.coordinates.lng); });
+var sortedList = data.sort(function (a, b) { return Math.abs(b.coordinates.lng) - Math.abs(a.coordinates.lng); });
 output.anchor = { title: sortedList[0].title, x: sortedList[0].coordinates.lng, y: sortedList[0].coordinates.lat };
 // Set that portal as anchor and remove it from the list of portals
 var anchor = sortedList.shift();

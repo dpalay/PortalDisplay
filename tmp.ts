@@ -49,7 +49,22 @@ const intersect = (line1: Link, line2: Link): boolean => {
 }
 
 // Program start
-import data from './data';
+import strData  from './data';
+let data: {
+    "guid": string;
+    "title": string;
+    "coordinates": {
+        "lat": number;
+        "lng": number;
+    };
+    "link": {
+        "intel": string;
+        "gmap": string;
+    };
+    "image": string;}[]
+
+    //@ts-ignore
+    data = strData
 
 //init output
 let output: {

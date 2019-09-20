@@ -16,9 +16,9 @@
         }
         
         .link {
-            stroke: #000;
-            stroke-opacity: 0.25;
-            stroke-width: 0.5;
+            stroke: #333;
+            stroke-opacity: 0.4;
+            stroke-width: 0.7;
         }
         
         #slider {
@@ -42,23 +42,21 @@
 <body translate="no">
     <div class="container-fluid">
         <div class="row">
-            <div class="col-md-2">
-                Current Step: <span id="currentStep">0</span>
-            </div>
-            <div class="col-md-2">
-                List of Links:
-            </div>
-            <div class="col-md-8" id="listOfLinks"></div>
+            <input id="slider" type="range" min="1" max="1" value="1" step="1" />
+            <span id="slider-value">0</span>
         </div>
         <div class="row">
-            <div class="col-md-12">
-                <input id="slider" type="range" min="0" max="1" value="0" step="1" />
-                <span id="slider-value">0</span>
-                <div id="graph-container"></div>
-            </div>
-            <div class="col-md-2" id="portalList">
-                <ul></ul>
-            </div>
+            <div class="col-md-2">
+                Current Step: <span id="currentStep">1</span> List of Links:
+                <span id="listOfLinks"></div>
+                  
+                  <div class="col-md-10">
+                    <div id="graph-container"></div>
+                  </div>
+                  <div class="col-md-2" id="portalList">
+                    <ul></ul>
+                  </div>
+                </div>
 
         </div>
     </div>
@@ -78,7 +76,7 @@
                 left: 40
             },
             width = () => container.node().clientWidth - margin.left - margin.right,
-            height = () => 800 - margin.top - margin.bottom;
+            height = () => 1200 - margin.top - margin.bottom;
         let svg = container.append("svg")
         let x = d3.scaleLinear().range([0, width()]);
         let y = d3.scaleLinear().range([height(), 0]);
@@ -89,14 +87,13 @@
 
 
             svg.attr("width", width() + margin.left + margin.right)
-                .attr("height", height() + margin.top + margin.bottom)
-                .append("g")
+               .attr("height", height() + margin.top + margin.bottom)
+               .append("g")
                 .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
             x = d3.scaleLinear().range([0, width()]);
             y = d3.scaleLinear().range([height(), 0]);
             d3.json("tmpoutput.json").then(data => {
                 slider.attr("max", data.betterPortalList.length - 1);
-                console.log(data);
                 chart = data;
                 let allLinks = data.allLinks;
                 let portals = data.betterPortalList;
@@ -126,7 +123,9 @@
                     .attr("class", "y axis")
                     .call(d3.axisLeft(y));
 
+
                 // Add the points!
+                
                 svg
                     .append("g")
                     .attr("class", "points")
@@ -148,13 +147,17 @@
                         let point = d3.select(`#p${i}`);
                         text.attr("display", "initial");
                         let links = d3.selectAll(`.link`);
+                        point.style("fill", "blue")
+                        point.attr("r", 5)
                         console.log(text);
                         console.log(point);
-                    })
-                    .on("mouseleave", (d, i, arr) => {
+                      })
+                      .on("mouseleave", (d, i, arr) => {
                         let text = d3.select(`#t${i}`);
                         let point = d3.select(`#p${i}`);
-                        // text.attr("display", "none")
+                        text.attr("display", "none")
+                        point.style("fill", "black")
+                        point.attr("r", 3)
                     });
 
 
@@ -168,7 +171,7 @@
                     .append("text")
                     .attr("dx", d => x(d.portal.x))
                     .attr("dy", d => y(d.portal.y))
-                    //.attr("display", "none")
+                    .attr("display", "none")
                     .attr("id", (d, i) => `t${i}`)
                     .text(d => d.portal.title);
 
@@ -237,11 +240,13 @@
 
             d3.selectAll("circle")
                 .filter((data, i) => i <= points)
-                .each((d, i, arr) => {
+                .each((d, ic, arr) => {
 
-                    tmpLinks = i == 0 ? d.linksTo : d.linksFrom.slice(1)
-                    linkStr += `${new Array(indent).fill(" ").join("")}* ${d.portal.title}\n`
-                    console.log(d)
+                    tmpLinks = ic == 0 ? d.linksTo : d.linksFrom.slice(1)
+                    linkStr += `${ic}. ${d.portal.title}\n`
+                    tmpLinks.forEach((link,i) => {linkStr += ic==0 ? "" : `    ${i}. ${link.dest.title}\n`})
+                    
+                    
                         // add the lines to the svg
                     d3.select(".links")
                         .selectAll("lines")
@@ -257,12 +262,10 @@
                         .attr("SourceId", (d, i) => `${d.source.x}|${d.source.y}`)
                         .attr("DestId", (d, i) => `${d.dest.x}|${d.dest.y}`);
 
-                    d3.select("#currentStep").text(i)
+                    d3.select("#currentStep").text(ic)
                 });
-            d3.select("#listOfLinks").html(converter.makeHtml(linkStr))
             console.log(linkStr)
-            console.log(converter.makeHtml(linkStr))
-
+            d3.select("#listOfLinks").html(converter.makeHtml(linkStr))
         } // Finishes Change Function
 
 

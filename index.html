@@ -42,24 +42,24 @@
 <body translate="no">
     <div class="container-fluid">
         <div class="row">
-            <div class="col-md-5">
+            <div class="col-lg-5">
                 <input id="slider" type="range" min="1" max="1" value="1" step="1" />
                 <span id="slider-value">0</span>
             </div>
-            <div class="col-md-7">
+            <div class="col-lg-7">
                 <button type="button" id="next" class="btn btn-success">Next</button>
                 <button type="button" id="prev" class="btn btn-danger">Prev</button>
             </div>
         </div>
         <div class="row">
-            <div class="col-md-2">
+            <div class="col-lg-2" style="max-height: 300px; overflow: auto" id="StepsDiv">
                 Current Step: <span id="currentStep">1</span> List of Links:
                 <span id="listOfLinks"></div>
 
-            <div class="col-md-10">
+            <div class="col-lg-10">
                 <div id="graph-container"></div>
             </div>
-            <div class="col-md-2" id="portalList">
+            <div class="col-lg-2" id="portalList">
                 <ul></ul>
             </div>
         </div>
@@ -70,13 +70,24 @@
     <script src="scripts/d3script.js"></script>
 
     <script>
+      function scrollToBottom(id){
+   var div = document.getElementById(id);
+   div.scrollTop = div.scrollHeight - div.clientHeight;
+}
+function scrollSmoothToBottom (id) {
+   var div = document.getElementById(id);
+   $('#' + id).animate({
+      scrollTop: div.scrollHeight - div.clientHeight
+   }, 500);
+}
+
         let chart;
         let currentCount = 0;
         let converter = new showdown.Converter()
         let chartContainer = document.getElementById("#graph-container")
         let container = d3.select("#graph-container");
         let slider = d3.select("#slider");
-        slider.on("input", change);
+        slider.on("input", sliderchange);
         let prev = d3.select("#prev")
         let next = d3.select("#next")
         prev.on("click", (x, y, z) => {
@@ -96,7 +107,7 @@
             left: 40
         },
             width = () => container.node().clientWidth - margin.left - margin.right,
-            height = () => 1200 - margin.top - margin.bottom;
+            height = () => 850 - margin.top - margin.bottom;
         let svg = container.append("svg")
         let x = d3.scaleLinear().range([0, width()]);
         let y = d3.scaleLinear().range([height(), 0]);
@@ -258,6 +269,7 @@
                     d3.select("#currentStep").text(ic)
                 });
             d3.select("#listOfLinks").html(converter.makeHtml(linkStr))
+            scrollToBottom("StepsDiv")
         } // Finishes Change Function
 
 

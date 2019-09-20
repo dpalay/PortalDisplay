@@ -42,39 +42,59 @@
 <body translate="no">
     <div class="container-fluid">
         <div class="row">
-            <input id="slider" type="range" min="1" max="1" value="1" step="1" />
-            <span id="slider-value">0</span>
+            <div class="col-md-5">
+                <input id="slider" type="range" min="1" max="1" value="1" step="1" />
+                <span id="slider-value">0</span>
+            </div>
+            <div class="col-md-7">
+                <button type="button" id="next" class="btn btn-success">Next</button>
+                <button type="button" id="prev" class="btn btn-danger">Prev</button>
+            </div>
         </div>
         <div class="row">
             <div class="col-md-2">
                 Current Step: <span id="currentStep">1</span> List of Links:
                 <span id="listOfLinks"></div>
-                  
-                  <div class="col-md-10">
-                    <div id="graph-container"></div>
-                  </div>
-                  <div class="col-md-2" id="portalList">
-                    <ul></ul>
-                  </div>
-                </div>
 
+            <div class="col-md-10">
+                <div id="graph-container"></div>
+            </div>
+            <div class="col-md-2" id="portalList">
+                <ul></ul>
+            </div>
         </div>
+
+    </div>
     </div>
     <script src="libs/d3.v5.js"></script>
     <script src="scripts/d3script.js"></script>
 
     <script>
         let chart;
+        let currentCount = 0;
         let converter = new showdown.Converter()
         let chartContainer = document.getElementById("#graph-container")
         let container = d3.select("#graph-container");
         let slider = d3.select("#slider");
+        slider.on("input", change);
+        let prev = d3.select("#prev")
+        let next = d3.select("#next")
+        prev.on("click", (x, y, z) => {
+            if (currentCount > 0) {
+                currentCount--
+            }
+            change()
+        })
+        next.on("click", () => {
+            currentCount++
+            change()
+        })
         let margin = {
-                top: 20,
-                right: 20,
-                bottom: 30,
-                left: 40
-            },
+            top: 20,
+            right: 20,
+            bottom: 30,
+            left: 40
+        },
             width = () => container.node().clientWidth - margin.left - margin.right,
             height = () => 1200 - margin.top - margin.bottom;
         let svg = container.append("svg")
@@ -87,8 +107,8 @@
 
 
             svg.attr("width", width() + margin.left + margin.right)
-               .attr("height", height() + margin.top + margin.bottom)
-               .append("g")
+                .attr("height", height() + margin.top + margin.bottom)
+                .append("g")
                 .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
             x = d3.scaleLinear().range([0, width()]);
             y = d3.scaleLinear().range([height(), 0]);
@@ -100,12 +120,12 @@
                 let linksFrom = data.linksFrom;
                 let linksTo = data.linksTo;
                 x.domain(
-                    d3.extent(portals, function(d) {
+                    d3.extent(portals, function (d) {
                         return d.portal.x;
                     })
                 ).nice();
                 y.domain(
-                    d3.extent(portals, function(d) {
+                    d3.extent(portals, function (d) {
                         return d.portal.y;
                     })
                 ).nice();
@@ -125,7 +145,7 @@
 
 
                 // Add the points!
-                
+
                 svg
                     .append("g")
                     .attr("class", "points")
@@ -151,8 +171,8 @@
                         point.attr("r", 5)
                         console.log(text);
                         console.log(point);
-                      })
-                      .on("mouseleave", (d, i, arr) => {
+                    })
+                    .on("mouseleave", (d, i, arr) => {
                         let text = d3.select(`#t${i}`);
                         let point = d3.select(`#p${i}`);
                         text.attr("display", "none")
@@ -190,44 +210,17 @@
                     .attr("id", (d, i) => `${d.source.title}_${d.dest.title}`)
                     .attr("SourceId", (d, i) => `${d.source.x}|${d.source.y}`)
                     .attr("DestId", (d, i) => `${d.dest.x}|${d.dest.y}`);
-
-                d3.select("#portalList")
-                    .selectAll("li")
-                    .data(portals)
-                    .enter()
-                    .append("li")
-                    .text(d => `${portals.indexOf(d)}: ${d.portal.title}`)
-                    .attr("id", d => `list${portals.indexOf(d)}`)
-                    .on("mouseover", x => {
-                        let text = d3.select(`#text${portals.indexOf(x)}`);
-                        let point = d3.select(`#point${portals.indexOf(x)}`);
-                        point.attr("r", 6);
-                        point.style("fill", "red");
-
-                        //    text.attr("display", "initial")
-                    })
-                    .on("mouseleave", x => {
-                        let text = d3.select(`#t${portals.indexOf(x)}`);
-                        let point = d3.select(`#p${portals.indexOf(x)}`);
-                        point.attr("r", 3);
-                        point.style("fill", "black");
-                    });
-                /*.append("path")
-                .attr("class", "point")
-                .attr("d", d3.symbol().type(d3.symbolCircle))
-                .attr("transform", function(d) {
-                    return "translate(" + x(d.x) + "," + y(d.y) + ")";
-                });*/
             });
-
-            slider.on("input", change);
-
         }
 
+        function sliderchange() {
+            currentCount = +this.value
+            change()
+        }
         // Redraw
         function change() {
             // Reset variables
-            let points = +this.value;
+            let points = currentCount
             // update the slider value
             d3.select("#slider-value").text(points);
 
@@ -244,10 +237,10 @@
 
                     tmpLinks = ic == 0 ? d.linksTo : d.linksFrom.slice(1)
                     linkStr += `${ic}. ${d.portal.title}\n`
-                    tmpLinks.forEach((link,i) => {linkStr += ic==0 ? "" : `    ${i}. ${link.dest.title}\n`})
-                    
-                    
-                        // add the lines to the svg
+                    tmpLinks.forEach((link, i) => { linkStr += ic == 0 ? "" : `    ${i}. ${link.dest.title}\n` })
+
+
+                    // add the lines to the svg
                     d3.select(".links")
                         .selectAll("lines")
                         .data(tmpLinks)
@@ -264,7 +257,6 @@
 
                     d3.select("#currentStep").text(ic)
                 });
-            console.log(linkStr)
             d3.select("#listOfLinks").html(converter.makeHtml(linkStr))
         } // Finishes Change Function
 

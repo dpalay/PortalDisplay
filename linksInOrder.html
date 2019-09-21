@@ -104,9 +104,10 @@
                     return d.portal.y;
           })
           ).nice();
-          
-          for (let i = 0; i < data.length; i++) {
-              const datum = data[i];
+          console.log(data)
+          for (let i = 0; i < data.betterPortalList .length; i++) {
+              const datum = data.betterPortalList[i];
+              console.log(datum, i)
               
               let svg = container.append("svg");
              
@@ -179,16 +180,18 @@
           .text(d => d.portal.title);
 
           d3.selectAll("circle")
-                .filter((data, i) => i <= points)
+                .filter((data, index) => index <= i)
                 .each((d, ic, arr) => {
 
                     tmpLinks = ic == 0 ? d.linksTo : d.linksFrom.slice(1)
-                    linkStr += `${ic}. ${d.portal.title}\n`
-                    tmpLinks.forEach((link, i) => { linkStr += ic == 0 ? "" : `    ${i}. ${link.dest.title}\n` })
+                    //linkStr += `${ic}. ${d.portal.title}\n`
+                    //tmpLinks.forEach((link, i) => { linkStr += ic == 0 ? "" : `    ${i}. ${link.dest.title}\n` })
 
 
                     // add the lines to the svg
-                    d3.select(".links")
+                    svg
+                        .append("g")
+                        .attr("class", "links")
                         .selectAll("lines")
                         .data(tmpLinks)
                         .enter()
@@ -234,7 +237,7 @@
             });
 
             // add the lines to the svg
-            d3.select(".links")
+            svg.select(".links")
               .selectAll("lines")
               .data(tmpLinks)
               .enter()
@@ -250,7 +253,7 @@
 
             d3.select("#currentStep").text(ic);
           });
-        d3.select("#listOfLinks").html(converter.makeHtml(linkStr));
+        //d3.select("#listOfLinks").html(converter.makeHtml(linkStr));
         scrollToBottom("StepsDiv");
       } // Finishes Change Function
 

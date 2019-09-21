@@ -144,26 +144,6 @@
               .attr("label", d => d.title)
               .attr("key", (d, i) => i)
               .attr("id", (d, i) => `p${i}`)
-              .on("mouseover", (d, i, arr) => {
-                  console.log(d);
-                  console.log(i);
-                  console.log(arr[i]);
-                  let text = d3.select(`#t${i}`);
-                  let point = d3.select(`#p${i}`);
-                  text.attr("display", "initial");
-                  let links = d3.selectAll(`.link`);
-                  point.style("fill", "blue");
-                  point.attr("r", 5);
-                  console.log(text);
-                  console.log(point);
-                })
-                .on("mouseleave", (d, i, arr) => {
-                    let text = d3.select(`#t${i}`);
-                    let point = d3.select(`#p${i}`);
-                    text.attr("display", "none");
-                    point.style("fill", "black");
-                    point.attr("r", 3);
-                });
                 
                 // Add labels to the points
                 svg

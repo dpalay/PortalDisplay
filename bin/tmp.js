@@ -142,7 +142,9 @@ for (var sourcePortalIndex = 1; sourcePortalIndex < portals.length; sourcePortal
 output.allLinks = __spreadArrays(allLinks);
 //console.log(output)
 fs.writeFileSync('./tmpoutput.json', JSON.stringify(output));
-console.log(output.linksTo.map(function (x, i) { return output.portalList[i].title + "," + x.length; }));
+console.log("~~~~~~~~~~~~~~~~~~~Portal,Keys~~~~~~~~~~~~~~~~~~~");
+output.linksTo.map(function (x, i) { return output.portalList[i].title + "," + x.length; }).forEach(function (key) { return console.log(key); });
+console.log("~~~~~~~~~~~~~~~~~~~List of Links~~~~~~~~~~~~~~~~~~~");
 output.linksFrom.forEach(function (links, i) {
     console.log(output.portalList[i].title);
     links.forEach(function (link, i) {

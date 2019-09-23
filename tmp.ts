@@ -194,8 +194,9 @@ output.allLinks = [...allLinks]
 
 //console.log(output)
 fs.writeFileSync('./tmpoutput.json',JSON.stringify(output))
-
-console.log(output.linksTo.map((x,i) => `${output.portalList[i].title},${x.length}`))
+console.log(`~~~~~~~~~~~~~~~~~~~Portal,Keys~~~~~~~~~~~~~~~~~~~`)
+output.linksTo.map((x,i) => `${output.portalList[i].title},${x.length}`).forEach(key => console.log(key))
+console.log(`~~~~~~~~~~~~~~~~~~~List of Links~~~~~~~~~~~~~~~~~~~`)
 output.linksFrom.forEach((links, i) => {
     console.log(output.portalList[i].title)
     links.forEach((link, i) => {
